@@ -1,0 +1,47 @@
+---
+title: "FinalProject"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+films <- read_csv("Final_Project_FlixGem.csv")
+```
+
+c.
+```{r}
+films_select <- films %>% select(`Hidden Gem Score`,`Director`) %>% na.omit() #dropping the data that has NA value in either Hidden Gem Score or Director
+
+films_director <- films_select %>% group_by(Director) %>% summarise(all_HGS = list(`Hidden Gem Score`)) %>% group_by(Director) %>% mutate(num_movie = lengths(all_HGS))
+head(films_director)
+#the purpose of this step is to create a tibble films_director that is grouped by director and we summarized all the hidden gem values(as a list) and num of movies for each director (details can be seen in the above tibble display(head(films_director)))
+
+
+add_HG_H <- function(input_data){
+  list_HGH_Index <- c() #creating a vector to store all the HG_H Index in order of the original data
+  index = 0 #used to keep track of HG_H Index 
+  for (i in 1:nrow(input_data)){ #iterating all directors
+    for (j in 1:lengths(input_data[[i,2]])){ #iterating the list that contain the hidden gem value for each director which is in the second column
+      if (input_data[[i,2]][[1]][j] >= lengths(input_data[[i,2]])){ 
+        #lengths of the list that contain the hidden gem score is the number of movies of that director
+        #The method used to conduct the HG-H Index is the amount of publications that has a hidden gem score higher than the number of publications
+        index = index + 1 
+      }
+    }
+    list_HGH_Index <- c(list_HGH_Index,index)
+    index = 0 #setting this tracker back to 0 for the next iteration
+  }
+  input_data$HG_H_Index <- list_HGH_Index #creating a new column that contains the index in order
+  return (input_data)
+}
+
+films_HGH_Index <- add_HG_H(films_director)
+Director_desc <- films_HGH_Index %>% arrange(desc(HG_H_Index)) #arrange by descending order
+Director_high10 <- Director_desc[c(1:10),] %>% select(Director, HG_H_Index)
+Director_high10
+```
+
