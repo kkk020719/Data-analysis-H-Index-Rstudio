@@ -12,7 +12,6 @@ library(tidyverse)
 films <- read_csv("Final_Project_FlixGem.csv")
 ```
 
-c.
 ```{r}
 films_select <- films %>% select(`Hidden Gem Score`,`Director`) %>% na.omit() #dropping the data that has NA value in either Hidden Gem Score or Director
 
